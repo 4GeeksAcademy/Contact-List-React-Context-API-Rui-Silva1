@@ -1,0 +1,16 @@
+.linkhome{
+    cursor:pointer;
+}
+
+.roundimage{
+    width: 100px;
+    margin-left: 20px;
+}
+
+.homeButton{
+    font-size: 200%;
+}
+
+.contactLink{
+    font-size: small;
+}
