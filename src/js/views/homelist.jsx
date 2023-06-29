@@ -1,54 +1,132 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Context } from "../store/appContext";
 import { useNavigate } from "react-router";
 import "../../styles/homelist.css";
+import nicerobot from "../../img/nicerobot.png";
 
 
-export const HomeList = () => {
+
+const HomeList = () => {
 
     const navigate = useNavigate();
 
-    return (
-        <div className="container">
-            <nav class="navbar bg-body-tertiary">
-                <form class="container-fluid justify-content-end">
-                    <button onClick={() => navigate("/addcontact")} class="btn btn-success me-2" type="button">Add new contact</button>
-                </form>
-            </nav>
-            <div className="container card">
-                <div className="row g-0 align-items-center">
-                    <div className="col-md-2">
-                        <img className="roundimage rounded-circle" src="https://picsum.photos/200" alt="..."/>
-                    </div>
-                    <div className="col-md-5 ms-5">
-                        <div className="card-body">
-                            <h5 onClick={() => navigate("/contactcard")} className="card-title">This is my name</h5>
-                            <div className="row text-secondary pt-1">
-                                <i class="col-auto fas fa-map-marker-alt pt-1"></i>
-                                <p className="col card-text ps-1">this my Adress</p>
+    const {store, actions} = useContext(Context);
+
+    const [contatList, setContactList] = useState([]);
+
+    useEffect(() => {
+        initAgenda();
+        fetchContacts();
+    },[]) 
+
+    const initAgenda = () => {
+        actions.changeAgenda('4geeks_agenda')
+    }
+
+    const fetchContacts = () => {
+        fetch("https://assets.breatheco.de/apis/fake/contact/agenda/" + store.agenda, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(resp => {
+            console.log(resp.ok); // will be true if the response is successfull
+            console.log(resp.status); // the status code = 200 or code = 400 etc.
+            console.log(resp); // will try return the exact result as string
+            return resp.json(); // (returns promise) will try to parse the result as json as return a promise that you can .then for results
+        })
+        .then(data => {
+            //here is where your code should start after the fetch finishes
+            console.log(data); //this will print on the console the exact object received from the server
+            setContactList(data);
+        })
+        .catch(error => {
+            //error handling
+            console.log(error);
+        });
+    }
+
+    const deleteContact = (contactId) => {
+        fetch("https://assets.breatheco.de/apis/fake/contact/" + contactId, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(resp => {
+            console.log(resp.ok); // will be true if the response is successfull
+            console.log(resp.status); // the status code = 200 or code = 400 etc.
+            console.log(resp); // will try return the exact result as string
+            return resp.json(); // (returns promise) will try to parse the result as json as return a promise that you can .then for results
+        })
+        .then(data => {
+            //here is where your code should start after the fetch finishes
+            console.log(data); //this will print on the console the exact object received from the server
+            alert('Contact has been deleted...!')
+            fetchContacts();
+        })
+        .catch(error => {
+            //error handling
+            console.log(error);
+        });
+    }
+
+    const showContacts = () => {
+        return contatList.map((contact, index) => {
+            return(
+                <div key={index}>
+                    <div className="container card mb-2">
+                        <div className="row g-0 align-items-center">
+                            <div className="col-md-2">
+                                <img className="roundimage rounded-circle" src={nicerobot} alt="..."/>
                             </div>
-                            <div className="row text-secondary pt-1">
-                                <i class="col-auto fas fa-phone pt-1"></i>
-                                <p className="col card-text text-secondary ps-1"><small>this my phone</small></p>
+                            <div className="col-md-5 ms-5">
+                                <div className="card-body">
+                                    <h5 onClick={() => navigate("/contactcard/" + contact.id )} className="card-title"><a href="">{contact.full_name}</a></h5>
+                                    <div className="row text-secondary pt-1">
+                                        <i className="col-auto fas fa-map-marker-alt pt-1"></i>
+                                        <p className="col card-text ps-1">{contact.address}</p>
+                                    </div>
+                                    <div className="row text-secondary pt-1">
+                                        <i className="col-auto fas fa-phone pt-1"></i>
+                                        <p className="col card-text text-secondary ps-1"><small>{contact.phone}</small></p>
+                                    </div>
+                                    <div className="row text-secondary pt-1">
+                                        <i className="col-auto far fa-envelope pt-1"></i>
+                                        <p className="col card-text text-secondary ps-1"><small className="text-muted">{contact.email}</small></p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="row text-secondary pt-1">
-                                <i class="col-auto far fa-envelope pt-1"></i>
-                                <p className="col card-text text-secondary ps-1"><small className="text-muted">this is my email</small></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="row">
-                            <div className="col-auto ms-5 me-3">
-                                <i class="fas fa-edit homeButton"></i>
-                            </div>
-                            <div className="col-auto ps-3 ms-3">
-                                <i class="fas fa-trash homeButton"></i>
+                            <div className="col-md-4">
+                                <div className="row">
+                                    <div className="col-auto ms-5 me-3">
+                                        <i className="fas fa-edit homeButton" onClick={() => navigate("/updatecontact/" + contact.id)}></i>
+                                    </div>
+                                    <div className="col-auto ps-3 ms-3">
+                                        <i className="fas fa-trash homeButton" onClick={() => deleteContact(contact.id)}></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            )
+        })
+    }
+
+    return (
+        <div className="container">
+            <nav className="navbar bg-body-tertiary">
+                <form className="container justify-content-end p-0">
+                    <button onClick={() => navigate("/addcontact")} className="btn btn-success" type="button">Add new contact</button>
+                </form>
+            </nav>
+            <div>
+                {showContacts()}
             </div>
         </div>
     )
 }
 
+export default HomeList;

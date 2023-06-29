@@ -12,7 +12,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			agenda: '4geeks_agenda'
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -35,8 +36,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return elm;
 				});
 
-				//reset the global store
-				setStore({ demo: demo });
+				//reset the global store,  need to append to store (...) because we have to update the last state as well as in changeAgenda
+				setStore({ 
+					...store,
+					demo: demo 
+				});
+			},
+			changeAgenda: (newAgenda) => {
+				const store = getStore();
+
+				setStore({
+					...store,
+					agenda: newAgenda
+				})
 			}
 		}
 	};
